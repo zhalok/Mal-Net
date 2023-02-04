@@ -10,8 +10,20 @@ export default function Home() {
       <header>
         <Navbar />
       </header>
+      <div
+        style={{
+          textAlign: "center",
+        }}
+      >
+        <h1>Welcome to Mal-Net</h1>
+        <h2>AI powered malaria cell detection</h2>
+      </div>
+
       <div className="container">
-        <h1>Welcome To Malnet</h1>
+        <div style={{}}>
+          Recognize infected malaria cell image with Convolutional Neural
+          Network
+        </div>
       </div>
     </div>
   );

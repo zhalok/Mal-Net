@@ -5,12 +5,15 @@ import Image from "next/image";
 import ImageIcon from "../public/image.jpg";
 import SelectItem from "../components/Select";
 import axios from "../utils/axios";
+import { PulseLoader, ClipLoader } from "react-spinners";
 
 export default function Predict() {
   const [image, setImage] = useState(null);
   const [imageUrl, setImageUrl] = useState("");
-  const [selectedModel, setSelectedModel] = useState("");
+  const [selectedModel, setSelectedModel] = useState("VGG19");
   const [result, setResult] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [message, setMessage] = useState("");
   const models = ["VGG19", "Custom"];
   useEffect(() => {
     if (!image) return;
@@ -19,15 +22,27 @@ export default function Predict() {
 
   const predict = async () => {
     const formData = new FormData();
+    if (!image) {
+      setMessage("Please upload an image!!!");
+      return;
+    }
     formData.append("file", image);
-
+    formData.append("model", selectedModel);
+    setLoading(true);
+    setResult("");
     axios
       .post("/predict", formData)
       .then((res) => {
         setResult(res.data.result);
+        setLoading(false);
       })
       .catch((e) => console.log(e));
   };
+
+  useEffect(() => {
+    if (image) setMessage("");
+  }, [image]);
+
   return (
     <div>
       <header>
@@ -69,10 +84,12 @@ export default function Predict() {
                 type="file"
                 onChange={(e) => {
                   setImage(e.target.files[0]);
+                  setResult("");
                 }}
               />
             </Button>
           </div>
+          <small style={{ color: "red" }}>{message}</small>
           <div style={{ marginTop: "20px" }}>
             <SelectItem
               item={selectedModel}
@@ -82,18 +99,33 @@ export default function Predict() {
             />
           </div>
           <div>
-            <Button
-              variant="contained"
-              color="success"
-              component="label"
-              sx={{ marginTop: "20px" }}
-              fullWidth
-              onClick={() => {
-                predict();
-              }}
-            >
-              Predict
-            </Button>
+            {loading ? (
+              <div
+                style={{
+                  width: "fit-content",
+                  marginLeft: "auto",
+                  marginRight: "auto",
+                  marginTop: "20px",
+                }}
+              >
+                <PulseLoader />
+              </div>
+            ) : (
+              <div>
+                <Button
+                  variant="contained"
+                  color="success"
+                  component="label"
+                  sx={{ marginTop: "20px", border: "1px solid black" }}
+                  fullWidth
+                  onClick={() => {
+                    predict();
+                  }}
+                >
+                  Predict
+                </Button>
+              </div>
+            )}
           </div>
         </div>
 
@@ -103,7 +135,7 @@ export default function Predict() {
             color: result == "Infected" ? "red" : "green",
           }}
         >
-          {result ? result : ""}
+          {result ? result : loading ? "Analyzing..." : ""}
         </h2>
       </div>
     </div>
